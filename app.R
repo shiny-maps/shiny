@@ -9,41 +9,31 @@ library(ggmap)
 
 
 # Load dataset 
-food_inspect<- read.csv("foodinspection.csv")
-food_inspect$location<- str_remove_all(food_inspect$location, "\\(") 
-food_inspect$location <- str_remove_all(food_inspect$location, "\\)")
-food_inspect$resultdttm <- as.Date(food_inspect$resultdttm, na.rm = FALSE)
+# food_inspect<- read.csv("ftmpf12b2esk.csv")
+# food_inspect$location<- str_remove_all(food_inspect$location, "\\(") 
+# food_inspect$location <- str_remove_all(food_inspect$location, "\\)")
+# food_inspect$resultdttm <- as.Date(food_inspect$resultdttm, na.rm = FALSE)
+# f_i<- food_inspect%>% separate(location,c("latitude", "longtitude"), sep = ",", fill = "right") 
+# f_i<- f_i %>% select(-dbaname)
+# f_i$latitude <- as.double(f_i$latitude)
+# f_i$longtitude <- as.double(f_i$longtitude)
+# f_i<- drop_na(f_i) 
+# 
+# # select data for year 2022
+# food1 <- f_i %>% group_by(businessname) %>% filter(resultdttm> '2022-01-01') %>% mutate(rank = row_number(businessname)) %>%
+#   filter(rank == 1)
 
 
-f_i<- food_inspect%>% separate(location,c("latitude", "longtitude"), sep = ",", fill = "right") 
-f_i<- f_i %>% select(-dbaname)
-f_i$latitude <- as.double(f_i$latitude)
-f_i$longtitude <- as.double(f_i$longtitude)
-f_i<- drop_na(f_i)
 
-# select data for year 2022
-food1 <- f_i %>% group_by(businessname) %>% filter(resultdttm> '2022-01-01') %>% mutate(rank = row_number(businessname)) %>%
-  filter(rank == 1)
 
+# *******
+# We cleaned the data and rank the order according to the result dates and exported into food_clean.csv. 
+# Please use food_clean.csv to run the following code and Shiny.
+
+food1 <- read.csv("food_clean.csv")
 fi_sf<- st_as_sf(food1, coords=c("longtitude","latitude" ),crs=4326)
 
-# Create maps
-## use ggplot2
-  
-# ggplot(data = fi_sf)+
-#   geom_sf(aes(color = licstatus))+
-#   ggtitle(label = "Food Establishment Inspections", subtitle = "License Status of Business")
-# 
-# ## use mapview
-# mapview(fi_sf,zcol="licstatus")
-# 
-# # use leaflet
-# m <- leaflet() %>% setView(lng = -71.0589, lat = 42.3601, zoom = 12)
-# m %>% addTiles()
-# m %>% addProviderTiles(providers$Stamen.Toner)
-# 
-# leaflet(data = food1) %>% addTiles() %>%
-#   addMarkers(~longtitude, ~latitude, popup = ~as.character(licstatus), label = ~as.character(licstatus))
+
 
 
 # The Shiny App
@@ -85,9 +75,9 @@ ui <- fluidPage(navbarPage("Food Establishment Inspections", collapsible = TRUE,
                                       fluidRow(
                                         column(2,
                                                selectInput(inputId = "my_zip", 
-                                                                       label = "Zone", 
-                                                                       choices = unique(food1$zip),
-                                                                       width = "220px"))),
+                                                           label = "Zone", 
+                                                           choices = unique(food1$zip),
+                                                           width = "220px"))),
                                       fluidRow(column(12,plotOutput(outputId = "zonemap",
                                                                     height = 500)))
                                     ))

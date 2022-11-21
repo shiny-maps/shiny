@@ -2,10 +2,7 @@
 # Pacakgae used
 library(tidyverse)
 library(ggplot2)
-library(tmap)
-library(ggmap)
 library(sf)
-library(mapview)
 library(leaflet)
 library(stringr)
 

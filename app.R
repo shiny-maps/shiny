@@ -5,6 +5,7 @@ library(ggplot2)
 library(sf)
 library(leaflet)
 library(stringr)
+library(ggmap)
 
 
 # Load dataset 
@@ -83,11 +84,12 @@ ui <- fluidPage(navbarPage("Food Establishment Inspections", collapsible = TRUE,
                                     fluidPage(
                                       fluidRow(
                                         column(2,
-                                               selectInput(inputId = "address", label = "Zone", 
-                                                           choices = food1 %>% select(address),
-                                                           width = "220px"))),
-                                      fluidRow(column(12,leafletOutput(outputId = "zonemap",height = 500), 
-                                                      actionButton("search", "Search!")))
+                                               selectInput(inputId = "my_zip", 
+                                                                       label = "Zone", 
+                                                                       choices = unique(food1$zip),
+                                                                       width = "220px"))),
+                                      fluidRow(column(12,plotOutput(outputId = "zonemap",
+                                                                    height = 500)))
                                     ))
 ) 
 )
@@ -109,8 +111,7 @@ server <- function(input, output, session) {
 
   # Tab: Restaurant License
    restaurant <- reactive({
-     input$license 
-     })
+     input$license })
    
   output$plot <- renderPlot({
     if (restaurant() == "Active"){
@@ -128,13 +129,17 @@ server <- function(input, output, session) {
   output$table2 <- renderTable(food1 %>%filter(businessname == input$foodb) %>% dplyr::select(businessname,viollevel, violdesc, violstatus, comments))
   
   # Tab: Location
-  point <- eventReactive(input$search,{
-    subset(food1, address = as.character(input$address))
+  page3 <- reactive({
+    food1 %>% 
+      filter(zip == input$my_zip)
   })
   
-  output$zonemap <- renderLeaflet({
-    leaflet() %>% addTiles() %>%
-      addCircleMarkers(data = point(),~longtitude, ~latitude, label = ~as.character(businessname), fillOpacity = 0.8)
+  output$zonemap <- renderPlot({
+    qmplot(x = longtitude, 
+           y = latitude,
+           data = page3(),
+           zoom = 15,
+           f = 0.1)
   })
 }
 
